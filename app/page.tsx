@@ -144,6 +144,7 @@ export default function Home() {
           // Reset the input
           event.target.value = '';
         } catch (error) {
+          console.error('Error al importar el archivo:', error);
           alert('Error al importar el archivo. Asegúrate de que sea un archivo Excel válido.');
         }
       };
