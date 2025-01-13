@@ -27,8 +27,14 @@ export default function Home() {
 
   useEffect(() => {
     const storedPlayers = localStorage.getItem('players');
+    const storedTeams = localStorage.getItem('teams');
+    
     if (storedPlayers) {
       setPlayers(JSON.parse(storedPlayers));
+    }
+    
+    if (storedTeams) {
+      setTeams(JSON.parse(storedTeams));
     }
   }, []);
 
@@ -54,23 +60,46 @@ export default function Home() {
   };
 
   const assignPlayer = (player: string, teamName: string) => {
-    setTeams(teams.map(team => {
+    const updatedTeams = teams.map(team => {
       if (team.name === teamName && team.players.length < 6) {
         return { ...team, players: [...team.players, player] };
       }
       return team;
-    }));
-    setPlayers(players.filter(p => p !== player));
+    });
+    
+    setTeams(updatedTeams);
+    localStorage.setItem('teams', JSON.stringify(updatedTeams));
+    
+    const updatedPlayers = players.filter(p => p !== player);
+    setPlayers(updatedPlayers);
+    localStorage.setItem('players', JSON.stringify(updatedPlayers));
   };
 
   const removePlayer = (player: string, teamName: string) => {
-    setTeams(teams.map(team => {
+    const updatedTeams = teams.map(team => {
       if (team.name === teamName) {
         return { ...team, players: team.players.filter(p => p !== player) };
       }
       return team;
-    }));
-    setPlayers([...players, player]);
+    });
+    
+    setTeams(updatedTeams);
+    localStorage.setItem('teams', JSON.stringify(updatedTeams));
+    
+    const updatedPlayers = [...players, player];
+    setPlayers(updatedPlayers);
+    localStorage.setItem('players', JSON.stringify(updatedPlayers));
+  };
+
+  const removeAllPlayers = () => {
+    if (window.confirm('¿Estás seguro que deseas eliminar todos los jugadores?')) {
+      setPlayers([]);
+      localStorage.setItem('players', JSON.stringify([]));
+      
+      const resetTeams = teams.map(team => ({ ...team, players: [] }));
+      setTeams(resetTeams);
+      localStorage.setItem('teams', JSON.stringify(resetTeams));
+    }
   };
 
   const downloadTeams = async () => {
