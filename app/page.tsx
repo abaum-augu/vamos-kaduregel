@@ -225,12 +225,7 @@ export default function Home() {
                 )}
               </div>
               <button 
-                onClick={() => {
-                  if (window.confirm('¿Estás seguro que deseas eliminar todos los jugadores?')) {
-                    setPlayers([]);
-                    localStorage.setItem('players', JSON.stringify([]));
-                  }
-                }}
+                onClick={removeAllPlayers}
                 className={styles.removeAllButton}
                 aria-label="Eliminar todos los jugadores"
               >
