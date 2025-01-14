@@ -61,7 +61,7 @@ export default function Home() {
 
   const assignPlayer = (player: string, teamName: string) => {
     const updatedTeams = teams.map(team => {
-      if (team.name === teamName && team.players.length < 6) {
+      if (team.name === teamName && team.players.length < 7) {
         return { ...team, players: [...team.players, player] };
       }
       return team;
@@ -294,7 +294,7 @@ export default function Home() {
                         </button>
                         <div className={styles.dropdownContent}>
                           {teams.map((team) => (
-                            team.players.length < 6 && (
+                            team.players.length < 7 && (
                               <button
                                 key={team.name}
                                 onClick={() => {
@@ -311,7 +311,7 @@ export default function Home() {
                                   color: team.color === '#FFFFFF' ? '#000000' : '#FFFFFF'
                                 }}
                               >
-                                {team.name} ({team.players.length}/6)
+                                {team.name} ({team.players.length}/7)
                               </button>
                             )
                           ))}
@@ -377,7 +377,7 @@ export default function Home() {
               style={{ backgroundColor: team.color }}
             >
               <h3 style={{ color: team.color === '#FFFFFF' ? '#000000' : '#FFFFFF' }}>
-                {team.name} ({team.players.length}/6)
+                {team.name} ({team.players.length}/7)
               </h3>
               <div className={styles.teamPlayers}>
                 {team.players.map((player) => (
