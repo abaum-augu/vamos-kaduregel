@@ -47,17 +47,19 @@ export default function Home() {
         const teamData = JSON.parse(storedTeams);
         const mergedTeams = TEAMS.map(team => {
           // Handle new format (with id)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let storedTeam = teamData.find((t: any) => t.id === team.id);
-          
+
           // Handle old format (with name/color, no id) for backward compatibility
           if (!storedTeam) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             storedTeam = teamData.find((t: any) => t.name === team.name);
           }
-          
+
           return storedTeam ? { ...team, players: storedTeam.players } : team;
         });
         setTeams(mergedTeams);
-        
+
         // Convert old format to new format in localStorage
         if (teamData.length > 0 && !teamData[0].id) {
           saveTeamsToLocalStorage(mergedTeams);
