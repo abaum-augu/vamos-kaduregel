@@ -8,15 +8,16 @@ type Team = {
   color: string;
   name: string;
   players: string[];
+  id: string;
 };
 
 const TEAMS: Team[] = [
-  { color: '#00FFFF', name: 'Cian', players: [] },
-  { color: '#FF0000', name: 'Rojo', players: [] },
-  { color: '#22C55E', name: 'Verde', players: [] },
-  { color: '#FFFFFF', name: 'Blanco', players: [] },
-  { color: '#87CEEB', name: 'Celeste', players: [] },
-  { color: '#F97316', name: 'Naranja', players: [] },
+  { color: '#00FFFF', name: 'Cian', players: [], id: 't1' },
+  { color: '#FF0000', name: 'Rojo', players: [], id: 't2' },
+  { color: '#22C55E', name: 'Verde', players: [], id: 't3' },
+  { color: '#FFFFFF', name: 'Blanco', players: [], id: 't4' },
+  { color: '#87CEEB', name: 'Celeste', players: [], id: 't5' },
+  { color: '#F97316', name: 'Naranja', players: [], id: 't6' },
 ];
 
 export default function Home() {
@@ -25,16 +26,48 @@ export default function Home() {
   const [newPlayer, setNewPlayer] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
+  const saveTeamsToLocalStorage = (teamsToSave: Team[]) => {
+    const simplifiedTeams = teamsToSave.map(team => ({
+      id: team.id,
+      players: team.players
+    }));
+    localStorage.setItem('teams', JSON.stringify(simplifiedTeams));
+  };
+
   useEffect(() => {
     const storedPlayers = localStorage.getItem('players');
     const storedTeams = localStorage.getItem('teams');
-    
+
     if (storedPlayers) {
       setPlayers(JSON.parse(storedPlayers));
     }
-    
+
     if (storedTeams) {
-      setTeams(JSON.parse(storedTeams));
+      try {
+        const teamData = JSON.parse(storedTeams);
+        const mergedTeams = TEAMS.map(team => {
+          // Handle new format (with id)
+          let storedTeam = teamData.find((t: any) => t.id === team.id);
+          
+          // Handle old format (with name/color, no id) for backward compatibility
+          if (!storedTeam) {
+            storedTeam = teamData.find((t: any) => t.name === team.name);
+          }
+          
+          return storedTeam ? { ...team, players: storedTeam.players } : team;
+        });
+        setTeams(mergedTeams);
+        
+        // Convert old format to new format in localStorage
+        if (teamData.length > 0 && !teamData[0].id) {
+          saveTeamsToLocalStorage(mergedTeams);
+        }
+      } catch (error) {
+        console.error('Error parsing teams from localStorage:', error);
+        // If JSON is malformed, clear localStorage and use default teams
+        localStorage.removeItem('teams');
+        setTeams(TEAMS);
+      }
     }
   }, []);
 
@@ -66,10 +99,10 @@ export default function Home() {
       }
       return team;
     });
-    
+
     setTeams(updatedTeams);
-    localStorage.setItem('teams', JSON.stringify(updatedTeams));
-    
+    saveTeamsToLocalStorage(updatedTeams);
+
     const updatedPlayers = players.filter(p => p !== player);
     setPlayers(updatedPlayers);
     localStorage.setItem('players', JSON.stringify(updatedPlayers));
@@ -82,10 +115,10 @@ export default function Home() {
       }
       return team;
     });
-    
+
     setTeams(updatedTeams);
-    localStorage.setItem('teams', JSON.stringify(updatedTeams));
-    
+    saveTeamsToLocalStorage(updatedTeams);
+
     const updatedPlayers = [...players, player];
     setPlayers(updatedPlayers);
     localStorage.setItem('players', JSON.stringify(updatedPlayers));
@@ -95,10 +128,10 @@ export default function Home() {
     if (window.confirm('¿Estás seguro que deseas eliminar todos los jugadores?')) {
       setPlayers([]);
       localStorage.setItem('players', JSON.stringify([]));
-      
+
       const resetTeams = teams.map(team => ({ ...team, players: [] }));
       setTeams(resetTeams);
-      localStorage.setItem('teams', JSON.stringify(resetTeams));
+      saveTeamsToLocalStorage(resetTeams);
     }
   };
 
@@ -114,7 +147,7 @@ export default function Home() {
 
     // Get only the teams with players
     const teamsWithPlayers = teams.filter(team => team.players.length > 0);
-    
+
     // Clone the team cards that have players
     teamsWithPlayers.forEach(team => {
       const teamElement = document.querySelector(`[data-team="${team.name}"]`);
@@ -157,7 +190,7 @@ export default function Home() {
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-          
+
           // Filter out empty values and get unique players
           const newPlayers = Array.from(new Set(
             jsonData.flat()
@@ -187,7 +220,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>¡Vamos Kaduregel!</h1>
-      
+
       <div className={styles.mainContent}>
         <div className={styles.playersSection}>
           <div className={styles.playersPool}>
@@ -202,18 +235,18 @@ export default function Home() {
                   className={styles.searchInput}
                 />
                 {searchTerm && (
-                  <button 
+                  <button
                     onClick={() => setSearchTerm('')}
                     className={styles.clearSearch}
                     aria-label="Limpiar búsqueda"
                   >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      strokeLinecap="round" 
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
                       strokeLinejoin="round"
                       width="16"
                       height="16"
@@ -224,18 +257,18 @@ export default function Home() {
                   </button>
                 )}
               </div>
-              <button 
+              <button
                 onClick={removeAllPlayers}
                 className={styles.removeAllButton}
                 aria-label="Eliminar todos los jugadores"
               >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
                   strokeLinejoin="round"
                   width="16"
                   height="16"
@@ -251,18 +284,18 @@ export default function Home() {
                   <div className={styles.playerHeader}>
                     <span>{player}</span>
                     <div className={styles.playerActions}>
-                      <button 
+                      <button
                         onClick={() => deletePlayer(player)}
                         className={styles.deleteButton}
                         aria-label="Eliminar jugador"
                       >
-                        <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
                           strokeLinejoin="round"
                           width="16"
                           height="16"
@@ -271,22 +304,22 @@ export default function Home() {
                         </svg>
                       </button>
                       <div className={styles.dropdownContainer}>
-                        <button 
+                        <button
                           className={styles.dropdownButton}
                           onClick={(e) => {
                             e.currentTarget.nextElementSibling?.classList.toggle(styles.show);
                           }}
                           aria-label="Asignar a equipo"
                         >
-                          <svg 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            viewBox="0 0 24 24" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            strokeWidth="2" 
-                            strokeLinecap="round" 
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
                             strokeLinejoin="round"
-                            width="16" 
+                            width="16"
                             height="16"
                           >
                             <path d="m6 9 6 6 6-6"/>
@@ -301,12 +334,12 @@ export default function Home() {
                                   assignPlayer(player, team.name);
                                   // Close dropdown after selection
                                   const dropdowns = document.getElementsByClassName(styles.dropdownContent);
-                                  Array.from(dropdowns).forEach(dropdown => 
+                                  Array.from(dropdowns).forEach(dropdown =>
                                     dropdown.classList.remove(styles.show)
                                   );
                                 }}
                                 className={styles.dropdownItem}
-                                style={{ 
+                                style={{
                                   backgroundColor: team.color,
                                   color: team.color === '#FFFFFF' ? '#000000' : '#FFFFFF'
                                 }}
@@ -347,13 +380,13 @@ export default function Home() {
                 id="fileInput"
               />
               <label htmlFor="fileInput" className={styles.importButton}>
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
                   strokeLinejoin="round"
                   width="16"
                   height="16"
