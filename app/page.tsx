@@ -11,11 +11,11 @@ type Team = {
 };
 
 const TEAMS: Team[] = [
-  { color: '#8B5CF6', name: 'Violeta', players: [] },
+  { color: '#00FFFF', name: 'Cian', players: [] },
+  { color: '#FF0000', name: 'Rojo', players: [] },
   { color: '#22C55E', name: 'Verde', players: [] },
   { color: '#FFFFFF', name: 'Blanco', players: [] },
-  { color: '#EC4899', name: 'Rosa', players: [] },
-  { color: '#EAB308', name: 'Amarillo', players: [] },
+  { color: '#87CEEB', name: 'Celeste', players: [] },
   { color: '#F97316', name: 'Naranja', players: [] },
 ];
 
